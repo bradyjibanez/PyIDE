@@ -1,0 +1,13 @@
+codemirror/__init__.py,sha256=eyRBFm_cxB0uf8Vt5WD2ZuU_-Xk39FGr3QThadYxGjI,242
+codemirror/__pycache__/__init__.cpython-37.pyc,,
+codemirror/__pycache__/fields.cpython-37.pyc,,
+codemirror/__pycache__/utils.cpython-37.pyc,,
+codemirror/__pycache__/widgets.cpython-37.pyc,,
+codemirror/fields.py,sha256=KEwdze-yldUulDJvBGxoJNp4tVLo8LYaQMJ4Bti-nUE,730
+codemirror/utils.py,sha256=JOoj2XbKwKdCCNTN6oAOxWg_RZXKKd4ZCYnurIqSev4,2290
+codemirror/widgets.py,sha256=2NaBrHg0kwLaXyhR8DeYYHnsh7jc1lUPSvVLDgyExuk,7948
+django_codemirror_widget-0.4.1.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+django_codemirror_widget-0.4.1.dist-info/METADATA,sha256=GQ0aLT_uKgx5eykyhwR120MoRX9eT3j2AyI44KqgUrQ,2511
+django_codemirror_widget-0.4.1.dist-info/RECORD,,
+django_codemirror_widget-0.4.1.dist-info/WHEEL,sha256=GBf6745TJ8PUSVf00LTQs_w-OsUzD9Wc795tFJt0GUs,93
+django_codemirror_widget-0.4.1.dist-info/top_level.txt,sha256=Dcko4rxi-_-pzRRHss_zCi3pe137SOYc9wIZx26YL78,11
