@@ -1,11 +1,10 @@
 from django.db import models
 
-class User(models.Model):
-	name 			= models.CharField(max_length = 100)
-	password	 	= models.TextField(default = "")
-
 class Script(models.Model):
-	name			= models.CharField(max_length = 100)
+	title			= models.CharField(max_length = 100)
+	content			= models.TextField(default = "")
+
 
 class Command(models.Model):
-	name			= models.CharField(max_length = 100)
+	title			= models.CharField(max_length = 100)
+	content			= models.TextField(default = "")
