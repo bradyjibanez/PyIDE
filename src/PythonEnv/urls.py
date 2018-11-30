@@ -29,4 +29,6 @@ urlpatterns = [
     #path("login/", login_view, name="login"),
     #path("register/", register_view, name="register")
     url(r'^editor/$', TemplateView.as_view(template_name="editor.html"), name='editor'),
+    path('django-rq/', include('django_rq.urls')),
+    url(r'^test/$', TemplateView.as_view(template_name="test.html"), name="test"),
 ]

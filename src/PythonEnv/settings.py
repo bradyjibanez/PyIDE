@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'djangocodemirror',
+    'django_rq',
+    'ws4redis',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +86,14 @@ DATABASES = {
     }
 }
 
+RQ_QUEUES = {
+	'default': {
+		'HOST': 'localhost',
+		'PORT': 6379,
+		'DB': 0,
+		'DEFAULT_TIMEOUT': 360,
+	}
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -134,3 +144,13 @@ CODEMIRROR_SETTINGS = codemirror_settings_update(CODEMIRROR_SETTINGS, {
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Django Websocket Redis Configuration
+WEBSOCKET_URL = '/ws/'
+WS4REDIS_EXPIRE = 7200
+WSGI_APPLICATION = 'ws4redis.django_runserver.application'
+WS4REDIS_CONNECTION = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 0
+}
