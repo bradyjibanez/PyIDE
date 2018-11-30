@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.debug import default_urlconf
 from django.views.generic.base import TemplateView
+from django.conf.urls import include, url
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +28,5 @@ urlpatterns = [
     #path("", login_view, name="login"),
     #path("login/", login_view, name="login"),
     #path("register/", register_view, name="register")
+    url(r'^editor/$', TemplateView.as_view(template_name="editor.html"), name='editor'),
 ]

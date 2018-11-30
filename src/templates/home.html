@@ -1,20 +1,11 @@
-{% extends 'base.html' %}
-{% block title %}Distribute Python IDE{% endblock %}
+{% block title %}<center><h1>Distribute Python IDE</h1></center>{% endblock %}
 
-{% block content %}
 {% if user.is_authenticated %}
-	Welcome {{ user.username }}
-
-	{% load static %}
-	<!--script src="src/static/CodeMirror/codemirror.js"></script-->
-	<link href="{% static 'CodeMirror/codemirror.js' %}">
-	<link href="{% static 'CodeMirror/codemirror.css' %}">
-
-	{{form}}
-
+	<p>Welcome {{ user.username }}!</p>
+	{% block content %}
+	{% endblock %}
 	<p><a href="{% url 'logout' %}">logout</a></p>
 {% else %}
 	<p>You are not logged in</p>
   	<a href="{% url 'login' %}">login</a>
 {% endif %}
-{% endblock %}

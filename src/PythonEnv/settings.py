@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from djangocodemirror.settings import *
+from djangocodemirror.helper import codemirror_settings_update
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
-    'codemirror'
+    'djangocodemirror',
 ]
 
 MIDDLEWARE = [
@@ -125,8 +127,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '/static/CodeMirror'),
 ]
 
-CODEMIRROR_PATH = "/static/CodeMirror"
-CODEMIRROR_CONFIG = { 'lineNumbers': True }
+#CODEMIRROR_PATH = "/static/CodeMirror"
+CODEMIRROR_SETTINGS = codemirror_settings_update(CODEMIRROR_SETTINGS, {
+    'lineNumbers': True,
+})
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
