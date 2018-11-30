@@ -2,13 +2,6 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from .forms import codemirror_window, TestForm
 
-def login_view(request):
-	return render(request, "login.html", {})
-
-def register_view(request):
-	return render(request, "register.html", {})
-	get_user_info(request)
-
 def get_user_info(request):
 	if request.method == 'POST':
 		form = NameForm(request.POST)
