@@ -13,7 +13,7 @@ In order to install and configure as contributor/coordinator node, ensure the fo
 ...and that's that.
 
 The purpose of this implementation is to allow for the least dependant replication requirement. The conda environment contains
-heirarchical file orientation and package requirements, and allows for overriding entirely local processed configuration. Simply delete the conda env to rid the installation and all requirements entirely.
+heirarchical file orientation and package requirements, and allows for overriding entirely local processed configuration. Simply remove the conda env (Scalinkd) to rid the installation and all requirements entirely.
 
 Linux installation and server initialization:
 
@@ -28,4 +28,9 @@ Linux installation and server initialization:
 
 **Operation**
 *********
+
+Operation outlined here is for contributor/coordinator node operation. Thus far in development, there is only potential for these types of nodes. Further development will include sole contributor node operation:
+
+
+
 
