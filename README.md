@@ -29,7 +29,7 @@ Linux installation and server initialization:
 **Operation**
 *********
 
-Operation outlined here is for contributor/coordinator node operation. Thus far in development, there is only potential for these types of nodes. Further development will include sole contributor node operation:
+Operation outlined here is for contributor/coordinator node operation. Thus far in development, there is only potential for these types of nodes to operate. Further development will include sole contributor node operation:
 
 
 
