@@ -19,7 +19,7 @@ Linux installation and server initialization:
 
     - Follow Anaconda installation instructions here: https://www.digitalocean.com/community/tutorials/how-to-install-the-anaconda-python-distribution-on-ubuntu-16-04
     - "git clone https://github.com/bradyjibanez/Scalinkd.git" (clone application source content)
-    - "cd Scalinkd" (ls to ensure that PyIDE.yaml exists)
+    - "cd Scalinkd" (ls to ensure that Scalinkd.yaml exists)
     - "conda env update -f=Scalinkd.yaml"
     - "conda activate Scalinkd"
     - "cd src"
