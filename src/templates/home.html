@@ -1,52 +1,86 @@
 <head>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+	<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+	{% load static %}
 </head>
 
+<div id="processIdTag" data-id="{{ ID }}"></div>
+<div id="tokenTag" data-token="{{ csrf_token }}"></div>
+
+	<div class="container-fluid">
 {% block title %}
-<center><div class="row">
-	<h3>Distributed Python IDE</h3>
-	<hr>
-</div></center>
+<div class="row header">
+        <h3>Distributed Python IDE {% static 'main' %}</h3>
+	<div style="position:absolute;right:0;">
+		<button id="runBtn">Run</button>
+		<a href="{% url 'logout' %}"><button>logout</button></a>
+	</div>
+        <hr>
+</div>
 {% endblock %}
-
 {% if user.is_authenticated %}
+		<div class="row">
+			<div class="col-8">
+				<form>
+					<textarea placeholder='Write Python script here...' rows='50' cols='125' id="code" name="code"></textarea>
+				</form>
 
-	<form>
- 		<textarea placeholder='Write Python script here...' rows='50' cols='125' id="code" name="code"></textarea>
-	</form>
-
-
-	{% load djangocodemirror_tags %}
-	{% codemirror_instance 'restructuredtext' 'code_codemirror' 'code' %}
-
-
-	<p><center>Welcome {{ user.username }}!</center></p>
+			</div>
+			<div class="col-4">
+				{% load djangocodemirror_tags %}
+				{% codemirror_instance 'restructuredtext' 'code_codemirror' 'code' %}
+				<p id="console"></p>
+			</div>
+		</div>
+	<!--<p><center>Welcome {{ user.username }}!</center></p>-->
 	<style type="text/css">
 	.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
 	.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 20px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
 	.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 20px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
 	.tg .tg-mjde{font-size:14px;font-family:"Comic Sans MS", cursive, sans-serif !important;;background-color:#ffccc9;border-color:#c0c0c0;text-align:left;vertical-align:top}
 	.tg .tg-4yvc{background-color:#ffccc9;border-color:#c0c0c0;text-align:left;vertical-align:top}
+	.header {
+		text-align: center;
+	}
+	#console {
+		width: 100%;
+		padding: 1%;
+		white-space: pre;
+		border-left: 1px solid black;
+		border-top: 1px solid black;
+	}
+	.CodeMirror,
+	#console {
+		height: 100%;
+	}
 	</style>
-	<center><table class="tg" style="undefined;table-layout: fixed; width: 204px">
+	<!--<center><table class="tg" style="undefined;table-layout: fixed; width: 204px">
 	<colgroup>
 	<col style="width: 80px">
 	<col style="width: 80px">
 	<col style="width: 80px">
-	<col style="width: 80px">
+	<!--<col style="width: 80px">-->
 	</colgroup>
-	  <tr>
-	    <th class="tg-mjde"><center>push</center></th>
-   	 <th class="tg-4yvc"><center>pull</center></th>
-	    <th class="tg-4yvc"><center>run</center></th>
-	    <th class="tg-4yvc"><center>sync</center></th>
-	  </tr>
+	<tr>
+		<!--<th class="tg-mjde"><center>push</center></th>
+		<th class="tg-4yvc"><center><button>Sync</button></center></th>
+		<th class="tg-4yvc"><center><button id="runBtn">Run</button></center></th>
+		<th class="tg-4yvc"><center><button>Auto-Sync</button></center></th>-->
+	</tr>
 	</table></center>
-		<center><p><a href="{% url 'logout' %}">logout</a></p></center>
+	<!--<center><p><a href="{% url 'logout' %}">logout</a></p></center>-->
 
+	</div>
 
 {% else %}
 	<center><p>You are not logged in</p>
   	<a href="{% url 'login' %}">login</a></center>
 
 {% endif %}
+
+<script src="/static/diff_match_patch.js/"></script>
+<script src="/static/websocket.js/"></script>
