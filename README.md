@@ -5,7 +5,7 @@ Scalinkd Distributed Python IDE
 **Installation**
 ************
 
-In order to install and configure as contributor/coordinator node, ensure the following prerequsites:
+In order to install and configure as contributor/coordinator node, ensure the following prerequisites:
 
 1) Anaconda V > 5.0
 2) Cloned local source of repository
