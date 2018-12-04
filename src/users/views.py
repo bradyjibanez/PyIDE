@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
-from .forms import codemirror_window, TestForm
+from tempfile import NamedTemporaryFile
+import os
+import subprocess
+#from .forms import codemirror_window, TestForm
 
 def get_user_info(request):
 	if request.method == 'POST':
@@ -27,3 +30,23 @@ def user_detail_view(request):
 def home(request):
 	form = TestForm
 	return render(request, "base.html", {'form': form})
+
+def editor(request, package=None, file=None, ID=None):
+	context = {'ID': ID}
+	return render(request, 'home.html', context)
+
+def run_python(request):
+	data = request.POST["code"]
+
+	list = data.split("\n")
+
+
+	tempFile = NamedTemporaryFile(delete=True, suffix=".py")
+	with open(tempFile.name, 'w') as f:
+		for x in list:
+			f.write(x+"\r\n")
+
+	#tempFile.close()
+	output = os.popen('python '+tempFile.name).read()
+
+	return HttpResponse(output)
