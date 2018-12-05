@@ -11,7 +11,7 @@ $(document).ready(function() {
 	var FC_THRESHOLD = 4; // Find co-ordinator threshold
 	var PS_THRESHOLD = 4; // Push threshold
 
-	var HB_INTERVAL = 5000;
+	var HB_INTERVAL = 500;
 
 	// Get file path and other info from elements
 	var processId = $("#processIdTag").data("id");
@@ -20,7 +20,6 @@ $(document).ready(function() {
 	//var file = $("#fileNameTag").data("name");
 	var file = "test";
 	var csrf = $("#tokenTag").data("token");
-	console.log(csrf);
 
 	// Set Globals
 	/*var ws = new WebSocket('ws://localhost:8000/ws/' +
@@ -36,17 +35,17 @@ $(document).ready(function() {
 	heartbeat_data["message_id"] = PULSE;
 	heartbeat_data["message"] = "--beat--";
 	var heartbeat_message = JSON.stringify(heartbeat_data);
-	console.log(heartbeat_message);
 	// Initialize heartbeat values
 	var missed_heartbeats = 0;
 	var caught_heartbeats = 0;
 	// Initialize code base array
-	var code_array = new Array();
+	var last_code = "";
 	// Initialize co-ordinator variables and set to false
 	var is_announced = false;
 	var is_coordinator = false;
 	var found_coordinator = false;
 	var election_called = false;
+	var is_syncd = false;
 
 	// Get current code file
 	/*$.ajax({
@@ -64,15 +63,6 @@ $(document).ready(function() {
 			console.log("Code retrieved successfully.");
 		}
 	});*/
-
-	var code_snippet = "def greet(name):\n" +
-		"       print('Hello', name)\n" +
-		"greet('Jack')\n" +
-		"greet('Jill')\n" +
-		"greet('Bob')\n";
-
-	code_codemirror.setValue(code_snippet);
-	code_array.push(code_snippet);
 
 	// Logs output in browser and IDE console
 	function consoleOutput(msg) {
@@ -149,11 +139,23 @@ $(document).ready(function() {
 			caught_heartbeats++;
 		}
 		if( !is_announced ) {
+			consoleOutput("Announcing connection.\n")
 			initializeCommunication();
 			is_announced = true;
 		}
+		if ( found_coordinator && !is_sycnd ) {
+			consoleOutput("Attempting to Sync");
+			var response = {}
+
+			response["id"] = processId;
+			response["message_id"] = PULL;
+			reponse["message"] = "Send code."
+
+			var response_json = JSON.stringify(response);
+			ws.send(response_json);
+		}
 		// Determine co-ordinator if not found
-		if( !found_coordinator ) {
+		else if( !found_coordinator ) {
 			// Wait 4 heartbeats
 			if( caught_heartbeats >= FC_THRESHOLD ) {
 				caught_heartbeats = 0;
@@ -193,26 +195,45 @@ $(document).ready(function() {
 						// Set response values
 						response["id"] = processId;
 						response["message_id"] = ASSERT;
-						response["msg"] = "I am the co-ordinator";
+						response["message"] = "I am the co-ordinator";
 						// Create JSON string from response
 						var json_response = JSON.stringify(response);
 						ws.send(json_response);
                 			} else if( mId == PULL ) {
                         			// Get current base
-                        			var index = code_array.length - 1;
-                        			var base_code = code_array[index];
+                        			var code = code_codemirror.getValue();
+						console.log(code);
                         			// Create response array
                         			var response = {};
                         			// Set response values
                         			response["id"] = processId;
                         			response["message_id"] = SYNC;
                         			response["target"] = pId;
-                        			response["msg"] = base_code;
+                        			response["message"] = code;
                         			// Create JSON string from respons
                         			var json_response = JSON.stringify(response);
                         			ws.send(json_response);
                 			} else if( mId == PUSH ) {
-
+						// Library looks for periods at end of lines to create sentences
+						var current = code_codemirror.getValue().replace("\n",".\n");
+						var sent_code = msg.replace("\n", ".\n");
+						// Merge code together
+						var result = handleMerge(current, msg);
+						// Set own code
+						var result_fixed = result.replace(".\n", "\n");
+						var cursor = code_codemirror.getCursor();
+						code_codemirror.setValue(result_fixed);
+						code_codemirror.setCursor(cursor);
+						// Create response array
+						var response = {};
+						// Set response values
+						response["id"] = processId;
+						response["message_id"] = SYNC;
+						response["target"] = pId;
+						response["message"] = result;
+						// Create JSON string from response
+						var json_response = JSON.stringify(response);
+						ws.send(json_response);
 					}
       				}
 				return;
@@ -233,6 +254,7 @@ $(document).ready(function() {
                 			var msg = json["message"];
                 			// Check for own heartbeat
 					console.log("Received: " + pId + "-" + mId);
+					console.log(msg);
                 			if( mId == PULSE && pId == processId ) {
                 			        // Clear missed heartbeats
                         			missed_heartbeats = 0;
@@ -240,6 +262,7 @@ $(document).ready(function() {
                         			caught_heartbeats++;
                         			if( caught_heartbeats >= PS_THRESHOLD ) {
 							caught_heartbeats = 0;
+							console.log("Pushing");
                                 			// Create response array
                                 			var response = {};
                                 			// Get current code
@@ -253,12 +276,25 @@ $(document).ready(function() {
 							ws.send(json_response);
                                 			return;
                         			}
-			                } else if ( mId == SYNC ) {
+			                } if ( !is_syncd ) {
+			                        consoleOutput("Attempting to Sync");
+			                        var response = {}
+
+			                        response["id"] = processId;
+			                        response["message_id"] = PULL;
+			                        response["message"] = "Send code."
+
+                			        var response_json = JSON.stringify(response);
+			                        ws.send(response_json);
+						is_syncd = true;
+					}else if ( mId == SYNC ) {
                         			// Log request to console
-                        			var log = "Sync request received. Updating code base.";
-                        			consoleOutput(log);
+                        			//var log = "Sync request received. Updating code base.\n";
+						//consoleOutput(log);
+						var cursor = code_codemirror.getCursor();
                         			// Set new code to active code
                         			code_codemirror.setValue(msg);
+						code_codemirror.setCursor(cursor)
                         			return;
                 			}
 				}
@@ -267,23 +303,19 @@ $(document).ready(function() {
 	}
 
 	// Handles code merging
-	function handleMerge(data) {
-		// Get co-ordinator code and contributor code
-		var current_code = code_codemirror.getValue();
-		var merge_code = data;
+	function handleMerge(code1, code2) {
 		// Initial diff_match_patch
 		var dmp = new diff_match_patch();
-		// Get difference in code
-		var diff = dmp.diff_main(current_code, merge_code);
+		dmp.Match_Threshold = 0.1;
+		dmp.Delete_Threshold = 0.1;
+		var diff = dmp.diff_main(code1, code2);
 		// Create patch to resolve differences
-		var patch = dmp.patch_make(current_code, merge_code, diff);
+		var patch = dmp.patch_make(code1, code2, diff);
 		// Apply patches
-		var result = dmp.patch_apply(patch, current_code)
+		var result = dmp.patch_apply(patch, code1)
 		console.log(result[0]);
 		return result[0];
 	}
-
-	handleMerge("test");
 
 	ws.onerror = function(e) {
 		var log = 'Websocket Error: ' + e + '\n';
