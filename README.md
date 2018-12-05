@@ -8,12 +8,10 @@ Scalinkd Distributed Python IDE
 In order to install and configure as contributor/coordinator node, ensure the following prerequisites:
 
 1) Anaconda V > 5.0
+2) Redis V > 2.4
 2) Cloned local source of repository
 
-...and that's that.
-
-The purpose of this implementation is to allow for the least dependant replication requirement. The conda environment contains
-heirarchical file orientation and package requirements, and allows for overriding entirely local processed configuration. Simply remove the conda env (Scalinkd) to rid the installation and all requirements entirely.
+The purpose of this implementation is to allow for the least dependant replication requirement. The conda environment contains heirarchical file orientation and package requirements, and allows for overriding entirely local processed configuration. Simply remove the conda env (Scalinkd) to rid the installation and all requirements entirely.
 
 For the sake of testing this beta implementation, it is required that all installation and operation occur via a Unix system. For Windows users, this can be avhieved through a Linux VM. 
 
