@@ -43,7 +43,7 @@ Scalinkd installation and activation:
 **Operation**
 *********
 
-Operation outlined here is for contributor/coordinator node operation. In order to operate the system, begin the coordinator as outlined aboce through
+Operation outlined here is for contributor/coordinator node operation. In order to operate the system, begin the coordinator as outlined above in the install section. From there on out, it is possible to join a Scalinkd environment at the 127.0.0.1:8000 address and gain access through the created super user in the first node. 
 
 
 
