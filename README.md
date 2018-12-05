@@ -19,6 +19,16 @@ For the sake of testing this beta implementation, it is required that all instal
 
 Linux installation and server initialization (coordinator configuration):
 
+Redis installation and activation:
+
+    - wget http://download.redis.io/redis-stable.tar.gz
+    - tar xvzf redis-stable.tar.gz
+    - cd redis-stable
+    - make
+    - redis-server
+
+Scalinkd installation and activation:
+
     - Follow Anaconda installation instructions here: https://www.digitalocean.com/community/tutorials/how-to-install-the-anaconda-python-distribution-on-ubuntu-16-04
     - "git clone https://github.com/bradyjibanez/Scalinkd.git" (clone application source content)
     - "cd Scalinkd" (ls to ensure that Scalinkd.yaml exists)
@@ -27,14 +37,6 @@ Linux installation and server initialization (coordinator configuration):
     - "cd src"
     - "python manage.py runserver"
     - Server runs at 127.0.0.1:8000. Check browser to begin distributed python coding!
-    
-Redis installation and activation:
-
-    - wget http://download.redis.io/redis-stable.tar.gz
-    - tar xvzf redis-stable.tar.gz
-    - cd redis-stable
-    - make
-    - redis-server
    
  Redis installation will take a fair amount of time in a Linux VM
 
