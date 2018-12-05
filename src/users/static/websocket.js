@@ -1,3 +1,7 @@
+/*
+ * Implements ws4redis and diff_match_patch to faciliate code communication
+ *
+ */
 $(document).ready(function() {
 
 	// Set Constants
@@ -7,6 +11,8 @@ $(document).ready(function() {
 	var PULSE 	= 3
 	var ASSERT 	= 4;
 	var SYNC	= 5;
+	var ELECT	= 6;
+	var VOTE	= 7;
 
 	var FC_THRESHOLD = 4; // Find co-ordinator threshold
 	var PS_THRESHOLD = 4; // Push threshold
@@ -46,6 +52,8 @@ $(document).ready(function() {
 	var found_coordinator = false;
 	var election_called = false;
 	var is_syncd = false;
+	var awaiting_response = false;
+	var is_victor = false;
 
 	// Get current code file
 	/*$.ajax({
@@ -215,14 +223,13 @@ $(document).ready(function() {
                         			ws.send(json_response);
                 			} else if( mId == PUSH ) {
 						// Library looks for periods at end of lines to create sentences
-						var current = code_codemirror.getValue().replace("\n",".\n");
-						var sent_code = msg.replace("\n", ".\n");
+						var current = code_codemirror.getValue();
+						var sent_code = msg;
 						// Merge code together
-						var result = handleMerge(current, msg);
+						var result = handleMerge(current, sent_code);
 						// Set own code
-						var result_fixed = result.replace(".\n", "\n");
 						var cursor = code_codemirror.getCursor();
-						code_codemirror.setValue(result_fixed);
+						code_codemirror.setValue(result);
 						code_codemirror.setCursor(cursor);
 						// Create response array
 						var response = {};
@@ -260,7 +267,98 @@ $(document).ready(function() {
                         			missed_heartbeats = 0;
                         			// Increment caught heartbeats
                         			caught_heartbeats++;
-                        			if( caught_heartbeats >= PS_THRESHOLD ) {
+						if( caught_heartbeats >= PS_THRESHOLD*2 && awaiting_response) {
+							awaiting_response = false;
+							// Create response array
+							var response = {};
+							// Set response values
+							response["id"] = processId;
+							response["message_id"] = ELECT;
+							response["message"] = "Elect a new co-ordinator!";
+							// Send response
+							var json_response = JSON.stringify(response);
+							ws.send(json_response);
+							election_called = true;
+                        			} else if( caught_heartbeats >= PS_THRESHOLD*2 && election_called ) {
+							if( is_victor ) {
+								var response = {};
+								response["id"] = processId;
+								response["message_id"] = ASSERT;
+								response["message"] = "I am the coordinator";
+								var json_response = JSON.stringify(response);
+								ws.send(json_response);
+
+								/*
+								 *
+								 * Couldn't get the function to work correctly if declared and called
+								 * This is surplus code that would be refactored out given more time
+								 * PLease ignore.
+								 */
+								ws.onmessage = function(e) {
+									// Get JSON array
+                                					var data = e.data;
+                                        				var json = JSON.parse(data);
+                                       					// Get message values
+                                        				var pId = json["id"];
+                                        				var mId = json["message_id"];
+                                        				var msg = json["message"];
+
+                                        				console.log("Recevied: " + pId + "-" + mId);
+                                        				// Check for own heartbeat
+                                        				if( mId == PULSE && pId == processId ) {
+                                        				        // Clear missed heartbeats
+                                        				        missed_heartbeats = 0;
+                                        				        // Increment caught heartbeats
+                                        				        caught_heartbeats++;
+                                        				} else if( mId == INIT ) {
+                                        				        // Create response array
+                                        				        var response = {};
+                                        				        // Set response values
+                                        				        response["id"] = processId;
+                                        				        response["message_id"] = ASSERT;
+                                        				        response["message"] = "I am the co-ordinator";
+                                        				        // Create JSON string from response
+                                        				        var json_response = JSON.stringify(response);
+                                        				        ws.send(json_response);
+                                        				} else if( mId == PULL ) {
+                                                				// Get current base
+                                                				var code = code_codemirror.getValue();
+                                                				console.log(code);
+                                                				// Create response array
+                                                				var response = {};
+                                                				// Set response values
+                                                				response["id"] = processId;
+                                                				response["message_id"] = SYNC;
+                                                				response["target"] = pId;
+                                                				response["message"] = code;
+                                                				// Create JSON string from respons
+                                                				var json_response = JSON.stringify(response);
+                                                				ws.send(json_response)
+									} else if( mId == PUSH ) {
+				                                                // Library looks for periods at end of lines to create sentences
+                        				                        var current = code_codemirror.getValue();
+                                                				var sent_code = msg;
+                                                				// Merge code together
+                                                				var result = handleMerge(current, sent_code);
+                                                				// Set own code
+                                                				var cursor = code_codemirror.getCursor();
+                                                				code_codemirror.setValue(result);
+                                                				code_codemirror.setCursor(cursor);
+                                                				// Create response array
+                                                				var response = {};
+                                                				// Set response values
+                                                				response["id"] = processId;
+                                                				response["message_id"] = SYNC;
+                                                				response["target"] = pId;
+                                                				response["message"] = result;
+                                                				// Create JSON string from response
+                                                				var json_response = JSON.stringify(response);
+                                                				ws.send(json_response);
+                                        				}
+								}
+								/* End of Monstrosity */
+							}
+						} else if( caught_heartbeats >= PS_THRESHOLD ) {
 							caught_heartbeats = 0;
 							console.log("Pushing");
                                 			// Create response array
@@ -274,8 +372,9 @@ $(document).ready(function() {
 							// Create JSON from response
 							var json_response = JSON.stringify(response);
 							ws.send(json_response);
+							awaiting_response = true;
                                 			return;
-                        			}
+                        			} 
 			                } if ( !is_syncd ) {
 			                        consoleOutput("Attempting to Sync");
 			                        var response = {}
@@ -287,16 +386,34 @@ $(document).ready(function() {
                 			        var response_json = JSON.stringify(response);
 			                        ws.send(response_json);
 						is_syncd = true;
-					}else if ( mId == SYNC ) {
-                        			// Log request to console
-                        			//var log = "Sync request received. Updating code base.\n";
-						//consoleOutput(log);
+					} else if ( mId == SYNC ) {
+						awaiting_response = false;
+						// Log request to console
+                        			var log = "Sync request received. Updating code base.\n";
+						consoleOutput(log);
 						var cursor = code_codemirror.getCursor();
                         			// Set new code to active code
                         			code_codemirror.setValue(msg);
 						code_codemirror.setCursor(cursor)
                         			return;
-                			}
+                			} else if ( mId == ELECT ) {
+						// Assume victory
+						is_victor = true;
+						election_called = true;
+						var response = {};
+						response["id"] = processId;
+						response["message_id"] = VOTE;
+						response["message"] = "Pick me!";
+						var json_response = JSON.stringify(response);
+						ws.send(json_response);
+					} else if ( mId == VOTE ) {
+						if( processId < pId ) {
+							is_victor = false;
+						}
+					} else if ( mId == ASSERT ) {
+						is_victor = false;
+						election_called = false;
+					}
 				}
 			}
 		}
