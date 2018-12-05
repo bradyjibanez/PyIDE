@@ -34,6 +34,7 @@ Scalinkd installation and activation:
     - "conda env update -f=Scalinkd.yaml"
     - "conda activate Scalinkd"
     - "cd src"
+    - "python manage.py createsuperuser" and follow the required included user definition prompts
     - "python manage.py runserver"
     - Server runs at 127.0.0.1:8000. Check browser to begin distributed python coding!
    
