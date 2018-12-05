@@ -21,11 +21,11 @@ Linux installation and server initialization (coordinator configuration):
 
 Redis installation and activation:
 
-    - wget http://download.redis.io/redis-stable.tar.gz
-    - tar xvzf redis-stable.tar.gz
-    - cd redis-stable
-    - make
-    - redis-server
+    - "wget http://download.redis.io/redis-stable.tar.gz"
+    - "tar xvzf redis-stable.tar.gz"
+    - "cd redis-stable"
+    - "make"
+    - "redis-server"
 
 Scalinkd installation and activation:
 
