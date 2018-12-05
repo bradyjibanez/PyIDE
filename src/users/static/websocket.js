@@ -5,11 +5,11 @@
 $(document).ready(function() {
 
 	// Set Constants
-	var INIT 	= 0;
-	var PUSH 	= 1;
-	var PULL 	= 2;
-	var PULSE 	= 3
-	var ASSERT 	= 4;
+	var INIT	= 0;
+	var PUSH	= 1;
+	var PULL	= 2;
+	var PULSE	= 3
+	var ASSERT  = 4;
 	var SYNC	= 5;
 	var ELECT	= 6;
 	var VOTE	= 7;
@@ -21,18 +21,16 @@ $(document).ready(function() {
 
 	// Get file path and other info from elements
 	var processId = $("#processIdTag").data("id");
-	//var project = $("#projectNameTag").data("name");
-	var project = "test";
-	//var file = $("#fileNameTag").data("name");
-	var file = "test";
+	// Standing in for IP and Port, if set, for submission purposes
+	var ip = $("#projectNameTag").data("name");
+	var port = $("#fileNameTag").data("name");
 	var csrf = $("#tokenTag").data("token");
 
-	// Set Globals
-	/*var ws = new WebSocket('ws://localhost:8000/ws/' +
-				project + '-' +
-				file + '?subscribe-broadcast&publish-broadcast&echo'
-	);*/
-	var ws = new WebSocket('ws://localhost:8000/ws/foobar?subscribe-broadcast&publish-broadcast&echo');
+	if( project != "" ) {
+		var ws = new WebSocket('ws://' + ip + ':' + port + '/ws/scalinkd?subscribe-broadcast&publish-broadcast&echo')
+	} else {
+		var ws = new WebSocket('ws://localhost:8000/ws/scalinkd?subscribe-broadcast&publish-broadcast&echo');
+	}
 
 	// Set heartbeat JSON
 	var heartbeat_interval = null;
@@ -138,7 +136,7 @@ $(document).ready(function() {
 
 		var pId = json["id"];
 		var mId = json["message_id"];
-		var msg	= json["message"];
+		var msg = json["message"];
 
 		console.log("Received: " + pId + "-" + mId);
 		// Track heartbeats
@@ -187,62 +185,23 @@ $(document).ready(function() {
 					var json = JSON.parse(data);
 					// Get message values
 					var pId = json["id"];
-                			var mId = json["message_id"];
-                			var msg = json["message"];
-
+					var mId = json["message_id"];
+					var msg = json["message"];
 					console.log("Recevied: " + pId + "-" + mId);
-                			// Check for own heartbeat
-                			if( mId == PULSE && pId == processId ) {
-                		        	// Clear missed heartbeats
-                        			missed_heartbeats = 0;
-                        			// Increment caught heartbeats
-                        			caught_heartbeats++;
+					// Check for own heartbeat
+					if( mId == PULSE && pId == processId ) {
+					// Clear missed heartbeats
+						missed_heartbeats = 0;
+						// Increment caught heartbeats
+						caught_heartbeats++;
 					} else if( mId == INIT ) {
-						// Create response array
-						var response = {};
-						// Set response values
-						response["id"] = processId;
-						response["message_id"] = ASSERT;
-						response["message"] = "I am the co-ordinator";
-						// Create JSON string from response
-						var json_response = JSON.stringify(response);
-						ws.send(json_response);
-                			} else if( mId == PULL ) {
-                        			// Get current base
-                        			var code = code_codemirror.getValue();
-						console.log(code);
-                        			// Create response array
-                        			var response = {};
-                        			// Set response values
-                        			response["id"] = processId;
-                        			response["message_id"] = SYNC;
-                        			response["target"] = pId;
-                        			response["message"] = code;
-                        			// Create JSON string from respons
-                        			var json_response = JSON.stringify(response);
-                        			ws.send(json_response);
-                			} else if( mId == PUSH ) {
-						// Library looks for periods at end of lines to create sentences
-						var current = code_codemirror.getValue();
-						var sent_code = msg;
-						// Merge code together
-						var result = handleMerge(current, sent_code);
-						// Set own code
-						var cursor = code_codemirror.getCursor();
-						code_codemirror.setValue(result);
-						code_codemirror.setCursor(cursor);
-						// Create response array
-						var response = {};
-						// Set response values
-						response["id"] = processId;
-						response["message_id"] = SYNC;
-						response["target"] = pId;
-						response["message"] = result;
-						// Create JSON string from response
-						var json_response = JSON.stringify(response);
-						ws.send(json_response);
+						coordinatorHandleInit();
+					} else if( mId == PULL ) {
+						coordinatorHandlePush();
+					} else if( mId == PUSH ) {
+						coordinatorHandlePull();
 					}
-      				}
+							}
 				return;
 			} else if( mId == ASSERT ) {
 				caught_heartbeats = 0;
@@ -253,20 +212,20 @@ $(document).ready(function() {
 				// Set message handling behaviour to participant
 				ws.onmessage = function(e) {
 					// Get JSON array
-			                var data = e.data;
-                			var json = JSON.parse(data);
-                			// Get message values
-                			var pId = json["id"];
-                			var mId = json["message_id"];
-                			var msg = json["message"];
-                			// Check for own heartbeat
+					var data = e.data;
+					var json = JSON.parse(data);
+					// Get message values
+					var pId = json["id"];
+					var mId = json["message_id"];
+					var msg = json["message"];
+					// Check for own heartbeat
 					console.log("Received: " + pId + "-" + mId);
 					console.log(msg);
-                			if( mId == PULSE && pId == processId ) {
-                			        // Clear missed heartbeats
-                        			missed_heartbeats = 0;
-                        			// Increment caught heartbeats
-                        			caught_heartbeats++;
+					if( mId == PULSE && pId == processId ) {
+						// Clear missed heartbeats
+						missed_heartbeats = 0;
+						// Increment caught heartbeats
+						caught_heartbeats++;
 						if( caught_heartbeats >= PS_THRESHOLD*2 && awaiting_response) {
 							awaiting_response = false;
 							// Create response array
@@ -279,7 +238,7 @@ $(document).ready(function() {
 							var json_response = JSON.stringify(response);
 							ws.send(json_response);
 							election_called = true;
-                        			} else if( caught_heartbeats >= PS_THRESHOLD*2 && election_called ) {
+						} else if( caught_heartbeats >= PS_THRESHOLD*2 && election_called ) {
 							if( is_victor ) {
 								var response = {};
 								response["id"] = processId;
@@ -296,116 +255,40 @@ $(document).ready(function() {
 								 */
 								ws.onmessage = function(e) {
 									// Get JSON array
-                                					var data = e.data;
-                                        				var json = JSON.parse(data);
-                                       					// Get message values
-                                        				var pId = json["id"];
-                                        				var mId = json["message_id"];
-                                        				var msg = json["message"];
+									var data = e.data;
+									var json = JSON.parse(data);
+									// Get message values
+									var pId = json["id"];
+									var mId = json["message_id"];
+									var msg = json["message"];
 
-                                        				console.log("Recevied: " + pId + "-" + mId);
-                                        				// Check for own heartbeat
-                                        				if( mId == PULSE && pId == processId ) {
-                                        				        // Clear missed heartbeats
-                                        				        missed_heartbeats = 0;
-                                        				        // Increment caught heartbeats
-                                        				        caught_heartbeats++;
-                                        				} else if( mId == INIT ) {
-                                        				        // Create response array
-                                        				        var response = {};
-                                        				        // Set response values
-                                        				        response["id"] = processId;
-                                        				        response["message_id"] = ASSERT;
-                                        				        response["message"] = "I am the co-ordinator";
-                                        				        // Create JSON string from response
-                                        				        var json_response = JSON.stringify(response);
-                                        				        ws.send(json_response);
-                                        				} else if( mId == PULL ) {
-                                                				// Get current base
-                                                				var code = code_codemirror.getValue();
-                                                				console.log(code);
-                                                				// Create response array
-                                                				var response = {};
-                                                				// Set response values
-                                                				response["id"] = processId;
-                                                				response["message_id"] = SYNC;
-                                                				response["target"] = pId;
-                                                				response["message"] = code;
-                                                				// Create JSON string from respons
-                                                				var json_response = JSON.stringify(response);
-                                                				ws.send(json_response)
+									console.log("Recevied: " + pId + "-" + mId);
+									// Check for own heartbeat
+									if( mId == PULSE && pId == processId ) {
+										// Clear missed heartbeats
+										missed_heartbeats = 0;
+										// Increment caught heartbeats
+										caught_heartbeats++;
+									} else if( mId == INIT ) {
+										coordinatorHandleInit();
+									} else if( mId == PULL ) {
+										coordinatorHandlePull();
 									} else if( mId == PUSH ) {
-				                                                // Library looks for periods at end of lines to create sentences
-                        				                        var current = code_codemirror.getValue();
-                                                				var sent_code = msg;
-                                                				// Merge code together
-                                                				var result = handleMerge(current, sent_code);
-                                                				// Set own code
-                                                				var cursor = code_codemirror.getCursor();
-                                                				code_codemirror.setValue(result);
-                                                				code_codemirror.setCursor(cursor);
-                                                				// Create response array
-                                                				var response = {};
-                                                				// Set response values
-                                                				response["id"] = processId;
-                                                				response["message_id"] = SYNC;
-                                                				response["target"] = pId;
-                                                				response["message"] = result;
-                                                				// Create JSON string from response
-                                                				var json_response = JSON.stringify(response);
-                                                				ws.send(json_response);
-                                        				}
+										coordinatorHandlePush(msg);
+									}
 								}
-								/* End of Monstrosity */
+								/* End of Surplus */
 							}
 						} else if( caught_heartbeats >= PS_THRESHOLD ) {
-							caught_heartbeats = 0;
-							console.log("Pushing");
-                                			// Create response array
-                                			var response = {};
-                                			// Get current code
-                                			var code = code_codemirror.getValue();
-                                			// Set response values
-                                			response["id"] = processId;
-                                			response["message_id"] = PUSH;
-                                			response["message"] = code;
-							// Create JSON from response
-							var json_response = JSON.stringify(response);
-							ws.send(json_response);
-							awaiting_response = true;
-                                			return;
-                        			} 
-			                } if ( !is_syncd ) {
-			                        consoleOutput("Attempting to Sync");
-			                        var response = {}
-
-			                        response["id"] = processId;
-			                        response["message_id"] = PULL;
-			                        response["message"] = "Send code."
-
-                			        var response_json = JSON.stringify(response);
-			                        ws.send(response_json);
-						is_syncd = true;
+							contributorHandlePush();
+						} 
+					} 
+					if ( !is_syncd ) {
+						contributorHandleInitSync()
 					} else if ( mId == SYNC ) {
-						awaiting_response = false;
-						// Log request to console
-                        			var log = "Sync request received. Updating code base.\n";
-						consoleOutput(log);
-						var cursor = code_codemirror.getCursor();
-                        			// Set new code to active code
-                        			code_codemirror.setValue(msg);
-						code_codemirror.setCursor(cursor)
-                        			return;
-                			} else if ( mId == ELECT ) {
-						// Assume victory
-						is_victor = true;
-						election_called = true;
-						var response = {};
-						response["id"] = processId;
-						response["message_id"] = VOTE;
-						response["message"] = "Pick me!";
-						var json_response = JSON.stringify(response);
-						ws.send(json_response);
+						contributorHandleSync();
+					} else if ( mId == ELECT ) {
+						contributorHandleElect();
 					} else if ( mId == VOTE ) {
 						if( processId < pId ) {
 							is_victor = false;
@@ -418,8 +301,137 @@ $(document).ready(function() {
 			}
 		}
 	}
+		
+	/*
+	 * Handles co-ordinator response to INIT process
+	 */
+	function coordinatorHandleInit() {
+		// Create response array
+		var response = {};
+		// Set response values
+		response["id"] = processId;
+		response["message_id"] = ASSERT;
+		response["message"] = "I am the co-ordinator";
+		// Create JSON string from response
+		var json_response = JSON.stringify(response);
+		ws.send(json_response);
+	}
 
-	// Handles code merging
+	/*
+	 * Handles co-ordinator actions during a PULL
+	 */
+	function coordinatorHandlePull() {
+		// Get current base
+		var code = code_codemirror.getValue();
+		console.log(code);
+		// Create response array
+		var response = {};
+		// Set response values
+		response["id"] = processId;
+		response["message_id"] = SYNC;
+		response["target"] = pId;
+		response["message"] = code;
+		// Create JSON string from respons
+		var json_response = JSON.stringify(response);
+		ws.send(json_response)
+	}
+	
+	/*
+	 * Handles co-ordinator actions during a PUSH
+	 */
+	function coordinatorHandlePush(msg) {
+		// Library looks for periods at end of lines to create sentences
+		var current = code_codemirror.getValue();
+		var sent_code = msg;
+		// Merge code together
+		var result = handleMerge(current, sent_code);
+		// Set own code
+		var cursor = code_codemirror.getCursor();
+		code_codemirror.setValue(result);
+		code_codemirror.setCursor(cursor);
+		// Create response array
+		var response = {};
+		// Set response values
+		response["id"] = processId;
+		response["message_id"] = SYNC;
+		response["target"] = pId; // Produces undesirable results when in use, kept for posteriy
+		response["message"] = result;
+		// Create JSON string from response
+		var json_response = JSON.stringify(response);
+		ws.send(json_response);
+	}
+	
+	/*
+	 * Pushes code to the co-ordinator
+	 */
+	function contributorHandlePush() {
+		caught_heartbeats = 0;
+		console.log("Pushing");
+		// Create response array
+		var response = {};
+		// Get current code
+		var code = code_codemirror.getValue();
+		// Set response values
+		response["id"] = processId;
+		response["message_id"] = PUSH;
+		response["message"] = code;
+		// Create JSON from response
+		var json_response = JSON.stringify(response);
+		ws.send(json_response);
+		awaiting_response = true;
+		return;
+	}
+	
+	/*
+	 * Handles request to sync upon initialization
+	 */
+	function contributorHandleInitSync() {
+		consoleOutput("Attempting to Sync");
+		var response = {}
+
+		response["id"] = processId;
+		response["message_id"] = PULL;
+		response["message"] = "Send code."
+
+		var response_json = JSON.stringify(response);
+		ws.send(response_json);
+		is_syncd = true;
+	}
+	
+	/*
+	 * Handles Sync commands sent by Co-ordinator
+	 */
+	function contributorHandleSync() {
+		awaiting_response = false;
+		// Log request to console
+		var log = "Sync request received. Updating code base.\n";
+		consoleOutput(log);
+		var cursor = code_codemirror.getCursor();
+		// Set new code to active code
+		code_codemirror.setValue(msg);
+		code_codemirror.setCursor(cursor)
+		return;
+	}
+	
+	/*
+	 * Handles communicating Process ID during election
+	 */
+	function contributorHandleElect() {
+		// Assume victory
+		is_victor = true;
+		election_called = true;
+		var response = {};
+		response["id"] = processId;
+		response["message_id"] = VOTE;
+		response["message"] = "Pick me!";
+		var json_response = JSON.stringify(response);
+		ws.send(json_response);
+
+	}
+
+	/*
+	 * Merges code files using Google's diff_match_patch library
+	 */
 	function handleMerge(code1, code2) {
 		// Initial diff_match_patch
 		var dmp = new diff_match_patch();

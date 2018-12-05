@@ -9,6 +9,13 @@
 </head>
 
 <div id="processIdTag" data-id="{{ ID }}"></div>
+{% if package is not None %}
+<div id="projectNameTag" data-name="{{ package }}"></div>
+<div id="fileNameTag" data-name="{{ file }}"></div>
+{% else %}
+<div id="projectNameTag" data-name=""></div>
+<div id="fileNameTag" data-name=""></div>
+{% endif %}
 <div id="tokenTag" data-token="{{ csrf_token }}"></div>
 
 	<div class="container-fluid">

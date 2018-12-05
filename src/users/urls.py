@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
 	path('', views.home, name='home'),
 	path('', views.editor, name='editor'),
+	url(r'^(?P<ID>.*)/$', view.editor
 	url(r'^(?P<package>.*)/(?P<file>.*)/(?P<ID>.*)/$', views.editor, name='editor'),
 	url(r'^run/', views.run_python, name='run'),
 #	path('admin/', admin.site.urls),
