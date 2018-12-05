@@ -29,7 +29,8 @@ Redis installation and activation:
 
 Scalinkd installation and activation:
 
-    - Follow Anaconda installation instructions here: https://www.digitalocean.com/community/tutorials/how-to-install-the-anaconda-python-distribution-on-ubuntu-16-04
+    - If not already installed, follow Anaconda installation instructions here:
+        https://www.digitalocean.com/community/tutorials/how-to-install-the-anaconda-python-distribution-on-ubuntu-16-04
     - "git clone https://github.com/bradyjibanez/Scalinkd.git" (clone application source content)
     - "cd Scalinkd" (ls to ensure that Scalinkd.yaml exists)
     - "conda env update -f=Scalinkd.yaml"
